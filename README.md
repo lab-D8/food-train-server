@@ -1,14 +1,14 @@
-catan
+Food Train
 =====
 
-Settlers of Catan REST API and client.
+Food Train REST API and client.
 
 Just so we are all on par, this is written in GO. As such, we are going to follow the GO guidelines when it comes to where to put GO-code.
 
 When you install GO, you have to give a GO_PATH, such as `~/GO`. Once you have this directory, in the GO_PATH, then you can run the following:
 
 ```
-go get github.com/iph/catan
+go get github.com/lab-D8/food-train-server
 ```
 
 If you get the error ```bzr not installed``` or something of that sort, install bzr (brew install for macs, and your distro flavor for linux). We do not use bzr, but one of the packages we rely on does. 
@@ -19,8 +19,8 @@ Afterwards, your directory structure should resemble something like this...
 ------/bin
 ---------/stuff
 ------/src
----------/github.com/iph
-------------/catan
+---------/github.com/lab-D8
+------------/food-train-server
 ---------------/router.go
 ---------------/router_test.go
 ---------------/user
@@ -37,7 +37,7 @@ Added to the wiki [here](https://github.com/iph/catan/wiki/Build-&-Run-Instructi
 Design Doc
 =========
 
-By working on the catan API, you agree to develop the API with the following mindset:
+By working on the food train API, you agree to develop the API with the following mindset:
 
 Law of Security
 -----------------
