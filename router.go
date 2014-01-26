@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/iph/catan/error"
-	"github.com/iph/catan/token"
+//	"github.com/iph/catan/token"
 	"github.com/iph/catan/user"
 	"labix.org/v2/mgo"
 	"net/http"
@@ -26,13 +26,8 @@ func (r Response) String() (s string) {
 }
 
 func main() {
-	fmt.Printf("Hello world\n")
-	http.HandleFunc("/user/new", HandlerGenerator(NewUserFunc))
-	// http.HandleFunc("/user/create-game", CreateGameFun)
-	// http.HandleFunc("/user/login", LoginFunc)
 	http.HandleFunc("/friends/add", HandlerGenerator(AddFriendFunc))
 	http.HandleFunc("/friends/remove", HandlerGenerator(RemoveFriendFunc))
-	http.HandleFunc("/user/verify-email", HandlerGenerator(VerifyEmailFunc))
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -56,22 +51,7 @@ func HandlerGenerator(handle func(*http.Request, mgo.Database) (Response)) (hand
 	}
 }
 
-/************************************
- * Like the rest, this is pretty simple
- * just calls CheckEmailHash with the right
- * arguments, then returns the ReturnCode
- ************************************/
-func VerifyEmailFunc(r *http.Request, db mgo.Database) (Response) {
-	var ret_err = error.SUCCESS
-	var user_email = r.FormValue("user")
-	var hash = r.FormValue("hash")
 
-	first_user := user.User{user_email, "", "", "", 0, 0, token.Token{}}
-	ret_err = first_user.CheckEmailHash(db, hash)
-
-	// return the error code from AddFriend, or NOTFOUND if one or both users don't exist
-	return Response{"return_code": ret_err, "description": error.GetDescription(ret_err)}
-}
 
 /************************************
  * See user.RemoveFriend for return codes
@@ -111,14 +91,4 @@ func AddFriendFunc(r *http.Request, db mgo.Database) (Response) {
 // NewUserFunc:
 //    Requires a {first_name, last_name, password, email}.
 //    Writes a json encoded value back to the user of success, or error.
-func NewUserFunc(r *http.Request, db mgo.Database) (Response) {
-	var ret_err = error.SUCCESS
-	var f_name = r.FormValue("first_name")
-	var l_name = r.FormValue("last_name")
-	var password = r.FormValue("password")
-	var email = r.FormValue("email")
-	
-	new_user := user.User{email, password, f_name, l_name, 0, 0, token.Token{}}
-	ret_err = new_user.New(db)
-	return Response{"return_code": ret_err, "description": error.GetDescription(ret_err)}
-}
+

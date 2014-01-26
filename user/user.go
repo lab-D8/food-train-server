@@ -5,7 +5,6 @@ import (
 	"github.com/iph/catan/error"
 	"github.com/iph/catan/util"
 	"github.com/iph/catan/gameroom"
-	"github.com/iph/catan/token"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"math/rand"
@@ -15,12 +14,9 @@ import (
 
 type User struct {
 	Email    string
-	Password string
+	Phone    string
 	Fname    string
 	Lname    string
-	Wins     int
-	Losses   int
-	Token    token.Token
 }
 
 type Friendship struct {
@@ -33,56 +29,12 @@ type EmailHash struct {
 	Hash  string
 }
 
-const WIN = 1
-const LOSS = 0
-
 /************************************
  * The go equivalent of toString()
  ***********************************/
 func (u User) String() string {
-	return fmt.Sprintf("Email: %s, Password: %s, Name: %s %s, Record: %dW-%dL, Token: %v",
-		u.Email, u.Password, u.Fname, u.Lname, u.Wins, u.Losses, u.Token)
-}
-
-/************************************
- * Creates a gameroom from a complete user (needs at least an email)
- *
- * Return codes:
- * SUCCESS if insert worked
- * DBERROR if issue during insert
- * NOTFOUND if user not in DB
- ***********************************/
-func (u *User) CreateGameroom(db mgo.Database) (g gameroom.GameRoom, returnCode int) {
-
-	// first make sure the user is in the DB
-	if u.Query(db) != error.SUCCESS {
-		return gameroom.GameRoom{}, error.NOTFOUND
-	}
-
-	// if so, go right ahead and insert into game_room
-	g.Id = bson.NewObjectId()
-	g.Creator = u.Email
-	g.Players = []string{u.Email}
-
-	// invitations already blank
-	err := db.C("game_room").Insert(g)
-
-	if err != nil {
-		// There was an error
-		return gameroom.GameRoom{}, error.DBERROR
-	}
-
-	return g,  error.SUCCESS
-}
-
-func (u *User) QueryAllUserGames(db mgo.Database) (gamerooms []gameroom.GameRoom, err int) {
-	results := []gameroom.GameRoom{}
-	erro := db.C("game_room").Find(bson.M{"creator": u.Email}).All(&results)
-	if erro != nil {
-		return results, error.DBERROR
-	}
-	gamerooms = results
-	return gamerooms, error.SUCCESS
+	return fmt.Sprintf("Email: %s, Name: %s %s",
+		u.Email, u.Fname, u.Lname)
 }
 
 /************************************
@@ -95,6 +47,7 @@ func (u *User) QueryAllUserGames(db mgo.Database) (gamerooms []gameroom.GameRoom
  * DBERROR if insert to DB failed
  * NOTFOUND if user not found in DB
  ***********************************/
+/* TODO: CHANGE THIS TO A DIFFERENT VALIDATION
 func (u *User) EmailValidation(db mgo.Database) (returnCode int) {
 
 	err := u.Query(db)
@@ -143,7 +96,7 @@ func (u *User) EmailValidation(db mgo.Database) (returnCode int) {
 	return error.SUCCESS
 
 }
-
+*/
 /************************************
  * Return Codes:
  * SUCCESS if hash matches up
@@ -170,45 +123,6 @@ func (u *User) CheckEmailHash(db mgo.Database, theirHash string) (returnCode int
 	return returnCode
 }
 
-/************************************
- * See WinLoss for return details
- ***********************************/
-func (u *User) AddWin(db mgo.Database) (returnCode int) {
-	return u.winLoss(db, WIN)
-}
-
-/************************************
- * See WinLoss for return details
- ***********************************/
-func (u *User) AddLoss(db mgo.Database) (returnCode int) {
-	return u.winLoss(db, LOSS)
-}
-
-/************************************
- * Return codes:
- * SUCCESS if insert worked
- * DBERROR if issue during update
- * NOTFOUND if user not found in DB
- ***********************************/
-func (u *User) winLoss(db mgo.Database, winOrLoss int) (returnCode int) {
-
-	winLossString := "wins"
-	if winOrLoss == LOSS {
-		winLossString = "losses"
-	}
-
-	// Make sure user is in database
-	if u.Query(db) != error.SUCCESS {
-		return error.NOTFOUND
-	}
-
-	// if so, go ahead!
-	if db.C("users").Update(bson.M{"email": u.Email}, bson.M{"$inc": bson.M{winLossString: 1}}) != nil {
-		return error.DBERROR
-	}
-
-	return error.SUCCESS
-}
 
 /************************************
  * Return codes:
@@ -244,6 +158,7 @@ func (u *User) New(db mgo.Database) (returnCode int) {
  * NOTFOUND 	if one or both of the users
  *						is not in the DB
  * NOTFRIENDS	if they aren't friends
+ * TODO: Phone is optional as well.
  ************************************/
 func (u *User) QueryFriend(db mgo.Database, friendEmail string) (returnCode int) {
 
@@ -278,6 +193,7 @@ func (u *User) QueryFriend(db mgo.Database, friendEmail string) (returnCode int)
  *					are not in the DB
  * ALREADY if friendship already in DB
  * DBERROR if the insert failed
+TODO: Make it so a friend is a phone as well.
  ***********************************/
 func (u *User) AddFriend(db mgo.Database, friendEmail string) (returnCode int) {
 
@@ -326,7 +242,7 @@ func (u *User) RemoveFriend(db mgo.Database, friendEmail string) (returnCode int
 			returnCode = error.SUCCESS
 		} else {
 			returnCode = error.DBERROR
-		}
+		}nn
 	} else if alreadyFriends == error.NOTFOUND {
 		returnCode = error.NOTFOUND
 	} else if alreadyFriends == error.NOTFRIENDS {
@@ -343,9 +259,10 @@ func (u *User) RemoveFriend(db mgo.Database, friendEmail string) (returnCode int
  ************************************/
 func (u *User) Query(db mgo.Database) (returnCode int) {
 	email := u.Email
+	phone := u.Phone
 
 	result := User{}
-	var err = db.C("users").Find(bson.M{"email": email}).One(&result)
+	var err = db.C("users").Find(bson.M{"email": email, "phone": phone}).One(&result)
 
 	if err != nil {
 		// User not found
@@ -353,11 +270,9 @@ func (u *User) Query(db mgo.Database) (returnCode int) {
 	} else {
 		// User found
 		u.Email = result.Email
-		u.Password = result.Password
+		u.Phone = result.Phone
 		u.Fname = result.Fname
 		u.Lname = result.Lname
-		u.Wins = result.Wins
-		u.Losses = result.Losses
 		return error.SUCCESS
 	}
 }
