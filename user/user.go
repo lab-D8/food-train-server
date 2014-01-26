@@ -242,7 +242,7 @@ func (u *User) RemoveFriend(db mgo.Database, friendEmail string) (returnCode int
 			returnCode = error.SUCCESS
 		} else {
 			returnCode = error.DBERROR
-		}nn
+		}
 	} else if alreadyFriends == error.NOTFOUND {
 		returnCode = error.NOTFOUND
 	} else if alreadyFriends == error.NOTFRIENDS {
