@@ -2,14 +2,13 @@ package user
 
 import (
 	"fmt"
-	"github.com/iph/catan/error"
-	"github.com/iph/catan/util"
-	"github.com/iph/catan/gameroom"
+	"github.com/lab-D8/food-train-server/error"
+//	"github.com/lab-D8/food-train-server/util"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-	"math/rand"
-	"net/smtp"
-	"strconv"
+//	"math/rand"
+//	"net/smtp"
+//	"strconv"
 )
 
 type User struct {
