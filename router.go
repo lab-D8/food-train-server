@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/iph/catan/error"
-//	"github.com/iph/catan/token"
-	"github.com/iph/catan/user"
+	"github.com/lab-D8/food-train-server/error"
+//	"github.com/lab-D8/food-train-server/token"
+	"github.com/lab-D8/food-train-server/user"
 	"labix.org/v2/mgo"
 	"net/http"
 )
@@ -61,7 +61,7 @@ func RemoveFriendFunc(r *http.Request, db mgo.Database) (Response) {
 	var user_email = r.FormValue("user")
 	var friend_email = r.FormValue("friend")
 
-	first_user := user.User{user_email, "", "", "", 0, 0, token.Token{}}
+	first_user := user.User{user_email, "", "", ""}
 	ret_err = first_user.RemoveFriend(db, friend_email)
 
 	// return the error code from RemoveFriend, or NOTFOUND if one or both users don't exist
@@ -81,7 +81,7 @@ func AddFriendFunc(r *http.Request, db mgo.Database) (Response) {
 	var user_email = r.FormValue("user")
 	var friend_email = r.FormValue("friend")
 
-	first_user := user.User{user_email, "", "", "", 0, 0, token.Token{}}
+	first_user := user.User{user_email, "", "", ""}
 	ret_err = first_user.AddFriend(db, friend_email)
 
 	// return the error code from AddFriend, or NOTFOUND if one or both users don't exist
