@@ -15,6 +15,7 @@ import (
 type User struct {
 	Email    string
 	Phone    string
+	Password string
 	Fname    string
 	Lname    string
 }
@@ -254,15 +255,24 @@ func (u *User) RemoveFriend(db mgo.Database, friendEmail string) (returnCode int
 
 /************************************
  * Return Codes:
- * SUCCESS if user was in database,
+ * SUCCESS if user was in database, (Only requires an email or phone number)
  * NOTFOUND otherwise
  ************************************/
 func (u *User) Query(db mgo.Database) (returnCode int) {
 	email := u.Email
-	phone := u.Phone
+	var errs
+	if email != "" {
+		errs = db.C("users").Find(bson.M{"email": email).One(&result)
+	}else{
+		reg, err := regexp.Compile("[^0-9]+")
+		if err != nil {
+			log.Fatal(err)
+		}
+		errs =  db.C("users").Find(bson.M{"phone": phone}).One(&result)
+	}
 
+	phone := u.Phone
 	result := User{}
-	var err = db.C("users").Find(bson.M{"email": email, "phone": phone}).One(&result)
 
 	if err != nil {
 		// User not found
@@ -273,6 +283,7 @@ func (u *User) Query(db mgo.Database) (returnCode int) {
 		u.Phone = result.Phone
 		u.Fname = result.Fname
 		u.Lname = result.Lname
+		u.Password = result.Password
 		return error.SUCCESS
 	}
 }

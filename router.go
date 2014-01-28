@@ -13,7 +13,7 @@ import (
 type Response map[string]interface{}
 
 var host = "localhost"
-var database_name = "catan"
+var database_name = "train"
 
 func (r Response) String() (s string) {
 	b, err := json.Marshal(r)
