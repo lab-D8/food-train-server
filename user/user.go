@@ -3,21 +3,18 @@ package user
 import (
 	"fmt"
 	"github.com/lab-D8/food-train-server/error"
-//	"github.com/lab-D8/food-train-server/util"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-//	"math/rand"
-//	"net/smtp"
-//	"strconv"
 )
 
 type User struct {
 	Email    string
 	Phone    string
 	Password string
-	Fname    string
-	Lname    string
+	Name    string
 }
+
+
 
 type Friendship struct {
 	User1 string
@@ -33,8 +30,8 @@ type EmailHash struct {
  * The go equivalent of toString()
  ***********************************/
 func (u User) String() string {
-	return fmt.Sprintf("Email: %s, Name: %s %s",
-		u.Email, u.Fname, u.Lname)
+	return fmt.Sprintf("Email: %s, Name: %s",
+		u.Email, u.Name)
 }
 
 /************************************
@@ -52,7 +49,7 @@ func (u *User) EmailValidation(db mgo.Database) (returnCode int) {
 
 	err := u.Query(db)
 
-	if err != error.SUCCESS {
+if err != error.SUCCESS {
 		return error.NOTFOUND
 	}
 
@@ -105,7 +102,6 @@ func (u *User) EmailValidation(db mgo.Database) (returnCode int) {
  ***********************************/
 func (u *User) CheckEmailHash(db mgo.Database, theirHash string) (returnCode int) {
 	returnCode = error.NOTFOUND
-
 	result := EmailHash{}
 
 	db.C("user_hash").Find(bson.M{"email": u.Email, "hash": theirHash}).One(&result)
@@ -280,8 +276,7 @@ func (u *User) Query(db mgo.Database) (returnCode int) {
 		// User found
 		u.Email = result.Email
 		u.Phone = result.Phone
-		u.Fname = result.Fname
-		u.Lname = result.Lname
+		u.Name = result.Name
 		u.Password = result.Password
 		return error.SUCCESS
 	}
